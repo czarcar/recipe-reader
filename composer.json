@@ -1,0 +1,24 @@
+{
+    "name": "czarcar/recipe-reader",
+    "description": "A library to scrape and extract recipes from various websites",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Brent Hansen",
+            "email": "brent.hansen@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "guzzlehttp/guzzle": "^6.3",
+        "ivopetkov/html5-dom-document-php": "^1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.4"
+    },
+    "autoload": {
+        "psr-0": {
+            "CzarCar\\RecipeReader\\": "src/"
+        }
+    }
+}
