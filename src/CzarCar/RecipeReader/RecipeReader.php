@@ -17,19 +17,28 @@ class RecipeReader
     public function __construct(ClientInterface $client, ParserFactoryInterface $parserFactory)
     {
         $this->client = $client;
+
+
         $this->parserFactory = $parserFactory;
         return $this;
     }
 
     public function fromUrl($uri)
     {
-        $parser = $this->selectParser($uri);
-        $html = $this->client->request('GET', $uri)->getBody();
+        $html = $this->client->request('GET', $uri, ['referer' => true,
+                                                     'headers' => [
+                                                         'User-Agent' => 'RecipeReader/v1.0',
+                                                         'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                                                    //     'Accept-Encoding' => 'gzip, deflate, br',
+                                                     ]])->getBody();
+
+        $parser = $this->parserFactory->create($this->getHostNameFromURL($uri), $html);
+
         return $parser->setHtml($html);
     }
 
-    protected function selectParser($uri)
+    protected function getHostNameFromURL($uri)
     {
-        return $this->parserFactory->create(parse_url($uri, PHP_URL_HOST));
+        return parse_url($uri, PHP_URL_HOST);
     }
 }

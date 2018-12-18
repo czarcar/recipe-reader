@@ -10,15 +10,21 @@ namespace CzarCar\RecipeReader\Parsers;
 
 
 
-class Delish extends AbstractParser
+class ForgottenWayFarms extends AbstractParser
 {
+    public function getTitle()
+    {
+        $classname = "wprm-recipe-name";
+        return $this->finder->query("//*[contains(@class, '$classname')]")->value;
+    }
+
     /**
      * class:  o-Ingredients__a-ListItemText
      */
     public function getIngredients()
     {
-        $classname="ingredient-item";
-        $nodes = iterator_to_array($this->finder->query("//*[contains(@class, '$classname')]"));
+        $classname="wprm-recipe-ingredients";
+        $nodes = iterator_to_array($this->finder->query("//*[contains(@class, '$classname')]/li"));
         $nodes = array_map(function($node) { return $this->clean($node)."\n"; }, $nodes );
         return $nodes;
     }
@@ -28,10 +34,10 @@ class Delish extends AbstractParser
      */
     public function getDirections()
     {
-        $classname="direction-lists";
-        $nodes = iterator_to_array($this->finder->query("//*[contains(@class, '$classname')]/ol/li"));
+        $classname="wprm-recipe-instructions";
+        $nodes = iterator_to_array($this->finder->query("//*[contains(@class, '$classname')]/li/div"));
         $nodes = array_map(function($node) { return $this->clean($node)."\n"; }, $nodes );
-        $directions = implode("", $nodes);
+//        $directions = implode("", $nodes);
         return $nodes;
     }
 }

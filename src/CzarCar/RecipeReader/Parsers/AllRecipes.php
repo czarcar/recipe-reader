@@ -35,6 +35,6 @@ class AllRecipes extends AbstractParser
         $nodes = iterator_to_array($this->finder->query("//*[contains(@class, '$classname')]"));
         $nodes = array_map(function($node) { return $this->clean($node)."\n"; }, $nodes );
         $directions = implode("", $nodes);
-        return $directions;
+        return $nodes;
     }
 }

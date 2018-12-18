@@ -9,34 +9,75 @@
 namespace CzarCar\RecipeReader\Parsers;
 
 use CzarCar\RecipeReader\Interfaces\ParserFactoryInterface;
-
+use CzarCar\RecipeReader\Parsers as P;
 
 
 class ParserFactory implements ParserFactoryInterface
 {
-    protected $domDocument;
+    //protected $domDocument;
 
-    static public $availableParsers = [
-        'www.cookingchanneltv.com' => 'CzarCar\RecipeReader\Parsers\CookingChannelTv',
-        'www.allrecipes.com' => 'CzarCar\RecipeReader\Parsers\AllRecipes',
-        'www.myrecipes.com' => 'CzarCar\RecipeReader\Parsers\MyRecipes',
-        'www.foodnetwork.com' => 'CzarCar\RecipeReader\Parsers\FoodNetwork',
-        'www.delish.com' => 'CzarCar\RecipeReader\Parsers\Delish'
+    static public $siteSpecificParsers = [
+        'www.cookingchanneltv.com' => P\CookingChannelTv::class,
+        'www.allrecipes.com' => P\AllRecipes::class,
+        'www.myrecipes.com' => P\MyRecipes::class,
+        'www.foodnetwork.com' => P\FoodNetwork::class,
+        'www.delish.com' => P\Delish::class,
+        //'www.forgottenwayfarms.com' => P\ForgottenWayFarms::class,
+        //'www.halfbakedharvest.com' => P\HalfBakedHarvest::class,
     ];
 
-    public function __construct(\DOMDocument $domDocument)
+    static public $generalParsers = [
+        'wprm-recipe-ingredients' => P\WordPressRecipeMakerParser::class,
+//        'wpurp-recipe-ingredient-container' => P\WordPressUltimateRecipe::class /* www.wpultimaterecipe.com */
+    ];
+
+    public function __construct()
     {
-        $this->domDocument = $domDocument;
+        //$this->domDocument = $domDocument;
     }
 
-    public function create($hostname)
+    public function create($hostname, $body)
     {
-        if(!isset(self::$availableParsers[$hostname])) {
+        $parser = false;
+        if (empty($parser)) {
+            $parser = $this->checkSiteSpecific($hostname);
+        }
+        if (empty($parser)) {
+            $parser = $this->guessAbstract($body);
+        }
+        if (empty($parser)) {
             throw new \Exception("No Parser available for {$hostname}");
         }
 
-        return new static::$availableParsers[$hostname]($this->domDocument);
+        return $this->createClass($parser);
     }
 
+    protected function guessAbstract($text)
+    {
+        foreach(self::$generalParsers as $identifier => $parser) {
+
+            if(stripos($text, $identifier)) {
+                return $parser;
+            }
+        }
+
+        return false;
+        //throw new \Exception("No general parser used");
+    }
+
+    protected function checkSiteSpecific($hostname)
+    {
+        if(isset(self::$siteSpecificParsers[$hostname])) {
+            return self::$siteSpecificParsers[$hostname];
+        }
+
+        return false;
+        //throw new \Exception("No site specific parser available for {$hostname}");
+    }
+
+    protected function createClass($className)
+    {
+        return new $className();
+    }
 
 }
